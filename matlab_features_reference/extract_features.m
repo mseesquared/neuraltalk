@@ -1,17 +1,23 @@
+path_to_matcaffe = '/opt/caffe/matlab/';
+addpath(path_to_matcaffe)
+
+model_def_file = '/mnt/data/models/vgg16_deploy.prototxt';
+model_file = '/mnt/data/models/VGG_ILSVRC_16_layers.caffemodel';
 %% vgg / caffe spec
 
 use_gpu = 1;
-caffe('set_device', 1);
-model_def_file = '/home/karpathy/caffe2/models/vgg_ilsvrc_16/deploy_features.prototxt';
-model_file = '/home/karpathy/caffe2/models/vgg_ilsvrc_16/VGG_ILSVRC_16_layers.caffemodel';
-batch_size = 10;
+caffe.set_mode_gpu();
+caffe.set_device(0);
+net = caffe.Net(model_def_file, model_file, 'test');
+%caffe('set_device', 1);
+batch_size = 175;
 
-matcaffe_init(use_gpu, model_def_file, model_file);
+%matcaffe_init(use_gpu, model_def_file, model_file);
 
 %% input files spec
 
-root_path = '/data2/karpathy/flickr30k/';
-fs = textread([root_path 'all_imgs.txt'], '%s');
+root_path = '/mnt/yushiw/neuraltalk/data/flickr8k/';
+fs = textread([root_path 'list.txt'], '%s');
 N = length(fs);
 
 %%
@@ -29,10 +35,20 @@ for b=1:batch_size:N
         end
         Is{end+1} = I;
     end
+
+    % Edge case for last batch
+    if size(Is, 2) < batch_size
+        for i = size(Is, 2) + 1:batch_size
+            Is{end+1} = Is{end};
+        end
+        size(Is, 2)
+    end
+    
     input_data = prepare_images_batch(Is);
 
     tic;
-    scores = caffe('forward', {input_data});
+    scores = net.forward({input_data});
+    %scores = caffe('forward', {input_data});
     scores = squeeze(scores{1});
     tt = toc;
 
