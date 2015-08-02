@@ -1,3 +1,4 @@
+setenv('KMP_DUPLICATE_LIB_OK', 'TRUE');
 path_to_matcaffe = '/opt/caffe/matlab/';
 addpath(path_to_matcaffe)
 
@@ -10,7 +11,7 @@ caffe.set_mode_gpu();
 caffe.set_device(0);
 net = caffe.Net(model_def_file, model_file, 'test');
 %caffe('set_device', 1);
-batch_size = 175;
+batch_size = 140;
 
 %matcaffe_init(use_gpu, model_def_file, model_file);
 
